@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:geolocator/geolocator.dart';
@@ -18,7 +19,9 @@ class LocationReporterService extends GetxService with WidgetsBindingObserver {
   final lastPosition = Rxn<Position>();
 
   Timer? _reportTimer;
+  StreamSubscription<Position>? _backgroundStream;
   bool _permissionGranted = false;
+  bool _isInBackground = false;
 
   @override
   void onInit() {
@@ -30,20 +33,20 @@ class LocationReporterService extends GetxService with WidgetsBindingObserver {
   void onClose() {
     WidgetsBinding.instance.removeObserver(this);
     _reportTimer?.cancel();
+    _backgroundStream?.cancel();
     super.onClose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      startReporting();
-    } else if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
-      stopReporting();
+      _exitBackground();
+    } else if (state == AppLifecycleState.paused) {
+      _enterBackground();
     }
   }
 
-  /// Start periodic location reporting. Call after login / app resume.
+  /// Start periodic location reporting. Call after login.
   Future<void> startReporting() async {
     if (isReporting.value) return;
     if (!_storage.isLoggedIn) return;
@@ -54,28 +57,74 @@ class LocationReporterService extends GetxService with WidgetsBindingObserver {
     }
 
     isReporting.value = true;
-    _scheduleTimer();
-    // Report immediately on start
+    _scheduleTimer(_currentFrequency());
     await _reportCurrentLocation();
   }
 
-  /// Stop periodic location reporting. Call on logout / app pause.
+  /// Stop all reporting. Call on logout.
   void stopReporting() {
     _reportTimer?.cancel();
     _reportTimer = null;
+    _backgroundStream?.cancel();
+    _backgroundStream = null;
     isReporting.value = false;
+    _isInBackground = false;
   }
 
-  /// Restart timer with current frequency setting.
+  /// Restart timer with current frequency setting (foreground only).
   void updateFrequency() {
-    if (!isReporting.value) return;
+    if (!isReporting.value || _isInBackground) return;
     _reportTimer?.cancel();
-    _scheduleTimer();
+    _scheduleTimer(_currentFrequency());
   }
 
-  void _scheduleTimer() {
-    final seconds = _storage.read<int>(AppConstants.locationFrequencyKey) ??
+  void _enterBackground() {
+    if (!isReporting.value) return;
+    _isInBackground = true;
+    _reportTimer?.cancel();
+    _scheduleTimer(AppConstants.frequencyBackground);
+    if (Platform.isAndroid) {
+      _startBackgroundStream();
+    }
+  }
+
+  void _exitBackground() {
+    _isInBackground = false;
+    _backgroundStream?.cancel();
+    _backgroundStream = null;
+    if (!isReporting.value) {
+      startReporting();
+    } else {
+      _reportTimer?.cancel();
+      _scheduleTimer(_currentFrequency());
+    }
+  }
+
+  /// Android only: start a position stream with foreground service notification
+  /// so the OS keeps the process alive in the background.
+  void _startBackgroundStream() {
+    _backgroundStream?.cancel();
+    _backgroundStream = Geolocator.getPositionStream(
+      locationSettings: AndroidSettings(
+        accuracy: LocationAccuracy.medium,
+        distanceFilter: 0,
+        foregroundNotificationConfig: const ForegroundNotificationConfig(
+          notificationTitle: 'UNII 位置共享',
+          notificationText: '正在后台共享位置给团队成员',
+          enableWakeLock: true,
+        ),
+      ),
+    ).listen((position) {
+      lastPosition.value = position;
+    });
+  }
+
+  int _currentFrequency() {
+    return _storage.read<int>(AppConstants.locationFrequencyKey) ??
         AppConstants.frequencyStandard;
+  }
+
+  void _scheduleTimer(int seconds) {
     _reportTimer = Timer.periodic(
       Duration(seconds: seconds),
       (_) => _reportCurrentLocation(),
@@ -88,8 +137,10 @@ class LocationReporterService extends GetxService with WidgetsBindingObserver {
 
     try {
       final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
+        locationSettings: LocationSettings(
+          accuracy: _isInBackground
+              ? LocationAccuracy.medium
+              : LocationAccuracy.high,
           distanceFilter: 0,
         ),
       );
@@ -131,6 +182,11 @@ class LocationReporterService extends GetxService with WidgetsBindingObserver {
     }
 
     if (permission == LocationPermission.deniedForever) return false;
+
+    // Upgrade to always for background access (gracefully degrades if denied)
+    if (permission == LocationPermission.whileInUse) {
+      await Geolocator.requestPermission();
+    }
 
     return true;
   }
