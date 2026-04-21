@@ -144,60 +144,68 @@ class MapView extends GetView<app.MapController> {
               itemCount: controller.memberLocations.length,
               itemBuilder: (context, index) {
                 final member = controller.memberLocations[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
-                    children: [
-                      Stack(
-                        children: [
-                          CircleAvatar(
-                            radius: 16,
-                            child: Text(
-                              member.nickname.isNotEmpty ? member.nickname[0] : '?',
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                          ),
-                          if (member.isOnline)
-                            Positioned(
-                              right: 0,
-                              bottom: 0,
-                              child: Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: Colors.green,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white, width: 1.5),
-                                ),
+                return GestureDetector(
+                  onTap: () => Get.toNamed('/track', arguments: {
+                    'user_id': member.userId,
+                    'team_id': controller.activeTeamId,
+                    'nickname': member.nickname,
+                  }),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        Stack(
+                          children: [
+                            CircleAvatar(
+                              radius: 16,
+                              child: Text(
+                                member.nickname.isNotEmpty ? member.nickname[0] : '?',
+                                style: const TextStyle(fontSize: 14),
                               ),
                             ),
-                        ],
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(member.nickname,
-                                style: const TextStyle(fontWeight: FontWeight.w500)),
-                            Text(
-                              member.isStale
-                                  ? '${member.latitude.toStringAsFixed(6)}, ${member.longitude.toStringAsFixed(6)} · ${member.timeAgoText}'
-                                  : '${member.latitude.toStringAsFixed(6)}, ${member.longitude.toStringAsFixed(6)}',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: member.isStale ? Colors.grey.shade400 : Colors.grey.shade500),
-                            ),
+                            if (member.isOnline)
+                              Positioned(
+                                right: 0,
+                                bottom: 0,
+                                child: Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.white, width: 1.5),
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
-                      ),
-                      if (member.speed != null && member.speed! > 0)
-                        Text(
-                          '${member.speed!.toStringAsFixed(1)} m/s',
-                          style: TextStyle(
-                              fontSize: 12, color: Colors.grey.shade600),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(member.nickname,
+                                  style: const TextStyle(fontWeight: FontWeight.w500)),
+                              Text(
+                                member.isStale
+                                    ? '${member.latitude.toStringAsFixed(6)}, ${member.longitude.toStringAsFixed(6)} · ${member.timeAgoText}'
+                                    : '${member.latitude.toStringAsFixed(6)}, ${member.longitude.toStringAsFixed(6)}',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: member.isStale ? Colors.grey.shade400 : Colors.grey.shade500),
+                              ),
+                            ],
+                          ),
                         ),
-                    ],
+                        if (member.speed != null && member.speed! > 0)
+                          Text(
+                            '${member.speed!.toStringAsFixed(1)} m/s',
+                            style: TextStyle(
+                                fontSize: 12, color: Colors.grey.shade600),
+                          ),
+                        const Icon(Icons.chevron_right, size: 16, color: Colors.grey),
+                      ],
+                    ),
                   ),
                 );
               },
