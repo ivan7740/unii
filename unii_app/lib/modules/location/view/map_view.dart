@@ -211,6 +211,18 @@ class MapView extends GetView<app.MapController> {
                             style: TextStyle(
                                 fontSize: 12, color: Colors.grey.shade600),
                           ),
+                        Obx(() {
+                          final dist = controller.distanceTo(member);
+                          if (dist == null) return const SizedBox.shrink();
+                          return Padding(
+                            padding: const EdgeInsets.only(left: 4),
+                            child: Text(
+                              dist,
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.blue.shade600),
+                            ),
+                          );
+                        }),
                         const Icon(Icons.chevron_right, size: 16, color: Colors.grey),
                       ],
                     ),
