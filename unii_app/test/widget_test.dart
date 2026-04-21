@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:unii_app/models/user.dart';
 import 'package:unii_app/utils/constants.dart';
 import 'package:unii_app/modules/location/controller/map_controller.dart' as app;
+import 'package:unii_app/services/message_cache_service.dart';
 
 void main() {
   test('User model parses from JSON', () {
@@ -60,5 +61,23 @@ void main() {
     expect(app.MapController.formatDistance(999), '999 m');
     expect(app.MapController.formatDistance(1000), '1.0 km');
     expect(app.MapController.formatDistance(1234), '1.2 km');
+  });
+
+  test('MessageCacheService.parseMessages returns empty list for empty string',
+      () {
+    expect(MessageCacheService.parseMessages(''), isEmpty);
+  });
+
+  test(
+      'MessageCacheService.parseMessages returns empty list for corrupt JSON',
+      () {
+    expect(MessageCacheService.parseMessages('not-json'), isEmpty);
+    expect(MessageCacheService.parseMessages('{invalid}'), isEmpty);
+  });
+
+  test(
+      'MessageCacheService.parseMessages returns empty list for empty array',
+      () {
+    expect(MessageCacheService.parseMessages('[]'), isEmpty);
   });
 }
