@@ -10,6 +10,7 @@ import 'services/auth_service.dart';
 import 'services/team_service.dart';
 import 'services/location_service.dart';
 import 'services/message_service.dart';
+import 'services/message_cache_service.dart';
 import 'services/ws_service.dart';
 import 'services/location_reporter_service.dart';
 import 'services/notification_service.dart';
@@ -25,6 +26,7 @@ void main() async {
   Get.put(TeamService());
   Get.put(LocationService());
   Get.put(MessageService());
+  await Get.putAsync(() => MessageCacheService().init());
   Get.put(WsService());
   Get.put(LocationReporterService());
   await Get.putAsync(() => NotificationService().init());
