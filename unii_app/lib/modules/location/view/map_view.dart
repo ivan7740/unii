@@ -59,6 +59,7 @@ class MapView extends GetView<app.MapController> {
                                 avatarUrl: m.avatarUrl,
                                 isStale: m.isStale,
                                 timeAgoText: m.timeAgoText,
+                                isOnline: m.isOnline,
                               ),
                             ))
                         .toList(),
@@ -147,12 +148,30 @@ class MapView extends GetView<app.MapController> {
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        radius: 16,
-                        child: Text(
-                          member.nickname.isNotEmpty ? member.nickname[0] : '?',
-                          style: const TextStyle(fontSize: 14),
-                        ),
+                      Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 16,
+                            child: Text(
+                              member.nickname.isNotEmpty ? member.nickname[0] : '?',
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ),
+                          if (member.isOnline)
+                            Positioned(
+                              right: 0,
+                              bottom: 0,
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: Colors.green,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.white, width: 1.5),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -196,12 +215,14 @@ class _MemberMarker extends StatelessWidget {
   final String? avatarUrl;
   final bool isStale;
   final String timeAgoText;
+  final bool isOnline;
 
   const _MemberMarker({
     required this.nickname,
     this.avatarUrl,
     this.isStale = false,
     this.timeAgoText = '',
+    this.isOnline = false,
   });
 
   @override
@@ -253,18 +274,40 @@ class _MemberMarker extends StatelessWidget {
           size: const Size(10, 6),
           painter: _TrianglePainter(color: color),
         ),
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
-                blurRadius: 4,
+        SizedBox(
+          width: 16,
+          height: 16,
+          child: Stack(
+            children: [
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
               ),
+              if (isOnline)
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1.5),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
