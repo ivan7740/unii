@@ -17,15 +17,28 @@ class MapController extends GetxController {
   final isLoading = false.obs;
   final error = RxnString();
   final connectionStatus = ConnectionStatus.disconnected.obs;
+  final mapStyle = 'standard'.obs;
 
   Timer? _staleRefreshTimer;
   String? _subscribedTeamId;
 
   String? get activeTeamId => _storage.read<String>(AppConstants.activeTeamKey);
 
+  static String tileUrl(String style) {
+    const urls = {
+      'standard': 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      'satellite':
+          'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      'terrain': 'https://a.tile.opentopomap.org/{z}/{x}/{y}.png',
+    };
+    return urls[style] ?? urls['standard']!;
+  }
+
   @override
   void onInit() {
     super.onInit();
+    final savedStyle = _storage.read<String>(AppConstants.mapStyleKey);
+    if (savedStyle != null) mapStyle.value = savedStyle;
 
     // Bind WS connection status
     ever(_ws.status, (status) {
@@ -165,5 +178,10 @@ class MapController extends GetxController {
     _subscribedTeamId = teamId;
 
     _loadLocations();
+  }
+
+  void setMapStyle(String style) {
+    mapStyle.value = style;
+    _storage.write(AppConstants.mapStyleKey, style);
   }
 }

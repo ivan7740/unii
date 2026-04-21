@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:unii_app/models/user.dart';
 import 'package:unii_app/utils/constants.dart';
+import 'package:unii_app/modules/location/controller/map_controller.dart' as app;
 
 void main() {
   test('User model parses from JSON', () {
@@ -42,5 +43,12 @@ void main() {
 
   test('frequencyBackground constant is 60 seconds', () {
     expect(AppConstants.frequencyBackground, 60);
+  });
+
+  test('MapController.tileUrl returns correct tile URLs', () {
+    expect(app.MapController.tileUrl('standard'), contains('openstreetmap.org'));
+    expect(app.MapController.tileUrl('satellite'), contains('arcgisonline.com'));
+    expect(app.MapController.tileUrl('terrain'), contains('opentopomap.org'));
+    expect(app.MapController.tileUrl('unknown'), contains('openstreetmap.org'));
   });
 }
