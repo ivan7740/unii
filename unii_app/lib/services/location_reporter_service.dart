@@ -69,6 +69,7 @@ class LocationReporterService extends GetxService with WidgetsBindingObserver {
     _backgroundStream = null;
     isReporting.value = false;
     _isInBackground = false;
+    _permissionGranted = false;
   }
 
   /// Restart timer with current frequency setting (foreground only).
@@ -89,15 +90,12 @@ class LocationReporterService extends GetxService with WidgetsBindingObserver {
   }
 
   void _exitBackground() {
+    if (!_isInBackground) return;
     _isInBackground = false;
     _backgroundStream?.cancel();
     _backgroundStream = null;
-    if (!isReporting.value) {
-      startReporting();
-    } else {
-      _reportTimer?.cancel();
-      _scheduleTimer(_currentFrequency());
-    }
+    _reportTimer?.cancel();
+    _scheduleTimer(_currentFrequency());
   }
 
   /// Android only: start a position stream with foreground service notification
@@ -114,9 +112,13 @@ class LocationReporterService extends GetxService with WidgetsBindingObserver {
           enableWakeLock: true,
         ),
       ),
-    ).listen((position) {
-      lastPosition.value = position;
-    });
+    ).listen(
+      (position) {
+        lastPosition.value = position;
+      },
+      onError: (_) {},
+      cancelOnError: false,
+    );
   }
 
   int _currentFrequency() {
