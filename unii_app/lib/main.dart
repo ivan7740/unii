@@ -12,6 +12,7 @@ import 'services/location_service.dart';
 import 'services/message_service.dart';
 import 'services/ws_service.dart';
 import 'services/location_reporter_service.dart';
+import 'services/notification_service.dart';
 import 'utils/constants.dart';
 
 void main() async {
@@ -26,6 +27,7 @@ void main() async {
   Get.put(MessageService());
   Get.put(WsService());
   Get.put(LocationReporterService());
+  await Get.putAsync(() => NotificationService().init());
 
   runApp(const UniiApp());
 }
