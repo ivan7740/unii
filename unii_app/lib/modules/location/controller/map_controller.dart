@@ -37,6 +37,8 @@ class MapController extends GetxController {
 
     // Listen for real-time location updates
     _ws.on('member_location', _onMemberLocation);
+    _ws.on('member_online', _onMemberOnline);
+    _ws.on('team_online_members', _onTeamOnlineMembers);
 
     // Load initial data via HTTP
     _loadLocations();
@@ -57,6 +59,8 @@ class MapController extends GetxController {
   @override
   void onClose() {
     _ws.off('member_location', _onMemberLocation);
+    _ws.off('member_online', _onMemberOnline);
+    _ws.off('team_online_members', _onTeamOnlineMembers);
     _staleRefreshTimer?.cancel();
     if (_subscribedTeamId != null) {
       _ws.leaveTeamChannel(_subscribedTeamId!);
@@ -94,6 +98,26 @@ class MapController extends GetxController {
       memberLocations[index] = updated;
     } else {
       memberLocations.add(updated);
+    }
+  }
+
+  void _onMemberOnline(Map<String, dynamic> data) {
+    final userId = data['user_id'] as String?;
+    final online = data['online'] as bool? ?? false;
+    if (userId == null) return;
+    final index = memberLocations.indexWhere((m) => m.userId == userId);
+    if (index >= 0) {
+      memberLocations[index] = memberLocations[index].copyWith(isOnline: online);
+    }
+  }
+
+  void _onTeamOnlineMembers(Map<String, dynamic> data) {
+    final userIds = (data['user_ids'] as List?)?.cast<String>() ?? [];
+    for (var i = 0; i < memberLocations.length; i++) {
+      final isOnline = userIds.contains(memberLocations[i].userId);
+      if (memberLocations[i].isOnline != isOnline) {
+        memberLocations[i] = memberLocations[i].copyWith(isOnline: isOnline);
+      }
     }
   }
 
