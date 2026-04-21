@@ -7,6 +7,7 @@ import '../../../services/storage_service.dart';
 import '../../../services/ws_service.dart';
 import '../../../services/location_reporter_service.dart';
 import '../../../utils/constants.dart';
+import 'package:flutter_map/flutter_map.dart' as fm;
 
 class MapController extends GetxController {
   final LocationService _locationService = Get.find<LocationService>();
@@ -19,6 +20,8 @@ class MapController extends GetxController {
   final error = RxnString();
   final connectionStatus = ConnectionStatus.disconnected.obs;
   final mapStyle = 'standard'.obs;
+  final fmController = fm.MapController();
+  final mapCamera = Rxn<fm.MapCamera>();
 
   Timer? _staleRefreshTimer;
   String? _subscribedTeamId;
@@ -51,6 +54,10 @@ class MapController extends GetxController {
       member.longitude,
     );
     return formatDistance(meters);
+  }
+
+  void onMapEvent(fm.MapEvent event) {
+    mapCamera.value = event.camera;
   }
 
   @override
