@@ -51,4 +51,14 @@ void main() {
     expect(app.MapController.tileUrl('terrain'), contains('opentopomap.org'));
     expect(app.MapController.tileUrl('unknown'), contains('openstreetmap.org'));
   });
+
+  test('MapController.formatDistance formats distances correctly', () {
+    expect(app.MapController.formatDistance(50), '< 100 m');
+    expect(app.MapController.formatDistance(99.9), '< 100 m');
+    expect(app.MapController.formatDistance(100), '100 m');
+    expect(app.MapController.formatDistance(350.6), '351 m');
+    expect(app.MapController.formatDistance(999), '999 m');
+    expect(app.MapController.formatDistance(1000), '1.0 km');
+    expect(app.MapController.formatDistance(1234), '1.2 km');
+  });
 }

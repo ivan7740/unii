@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:get/get.dart';
+import 'package:geolocator/geolocator.dart';
 import '../../../models/location.dart';
 import '../../../services/location_service.dart';
 import '../../../services/storage_service.dart';
@@ -32,6 +33,24 @@ class MapController extends GetxController {
       'terrain': 'https://a.tile.opentopomap.org/{z}/{x}/{y}.png',
     };
     return urls[style] ?? urls['standard']!;
+  }
+
+  static String formatDistance(double meters) {
+    if (meters < 100) return '< 100 m';
+    if (meters < 1000) return '${meters.round()} m';
+    return '${(meters / 1000).toStringAsFixed(1)} km';
+  }
+
+  String? distanceTo(MemberLocation member) {
+    final pos = _reporter.lastPosition.value;
+    if (pos == null) return null;
+    final meters = Geolocator.distanceBetween(
+      pos.latitude,
+      pos.longitude,
+      member.latitude,
+      member.longitude,
+    );
+    return formatDistance(meters);
   }
 
   @override
