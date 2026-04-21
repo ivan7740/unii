@@ -42,10 +42,11 @@ class MapView extends GetView<app.MapController> {
                 initialZoom: 14,
               ),
               children: [
-                TileLayer(
-                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'com.unii.app',
-                ),
+                Obx(() => TileLayer(
+                      urlTemplate:
+                          app.MapController.tileUrl(controller.mapStyle.value),
+                      userAgentPackageName: 'com.unii.app',
+                    )),
                 // 成员标记
                 if (members.isNotEmpty)
                   MarkerLayer(
@@ -65,6 +66,13 @@ class MapView extends GetView<app.MapController> {
                         .toList(),
                   ),
               ],
+            ),
+
+            // 地图样式切换按钮
+            Positioned(
+              top: 48,
+              left: 12,
+              child: _buildStyleButtons(),
             ),
 
             // 底部成员面板
@@ -214,6 +222,47 @@ class MapView extends GetView<app.MapController> {
         ],
       ),
     );
+  }
+
+  Widget _buildStyleButtons() {
+    final styles = [
+      ('standard', Icons.map, '标准'),
+      ('satellite', Icons.satellite_alt, '卫星'),
+      ('terrain', Icons.terrain, '地形'),
+    ];
+    return Obx(() => Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.9),
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: styles.map((s) {
+              final isSelected = controller.mapStyle.value == s.$1;
+              return IconButton(
+                icon: Icon(
+                  s.$2,
+                  color: isSelected
+                      ? Theme.of(Get.context!).colorScheme.primary
+                      : Colors.grey.shade400,
+                  size: 20,
+                ),
+                tooltip: s.$3,
+                onPressed: () => controller.setMapStyle(s.$1),
+                padding: const EdgeInsets.all(8),
+                constraints:
+                    const BoxConstraints(minWidth: 36, minHeight: 36),
+              );
+            }).toList(),
+          ),
+        ));
   }
 }
 
