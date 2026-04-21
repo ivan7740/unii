@@ -42,6 +42,9 @@ class MapView extends GetView<app.MapController> {
                     ? LatLng(members.first.latitude, members.first.longitude)
                     : const LatLng(39.9042, 116.4074), // 默认北京
                 initialZoom: 14,
+                onMapReady: () {
+                  controller.mapCamera.value = controller.fmController.camera;
+                },
                 onMapEvent: controller.onMapEvent,
               ),
               children: [
@@ -326,28 +329,33 @@ class MapView extends GetView<app.MapController> {
 
             arrows.add(
               Positioned(
-                left: edgePt.dx - 16,
+                left: edgePt.dx - 20,
                 top: edgePt.dy - 16,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Transform.rotate(
-                      angle: angle,
-                      child: const Icon(
-                        Icons.navigation,
-                        size: 20,
-                        color: Colors.blue,
+                child: SizedBox(
+                  width: 40,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Transform.rotate(
+                        angle: angle,
+                        child: const Icon(
+                          Icons.navigation,
+                          size: 20,
+                          color: Colors.blue,
+                        ),
                       ),
-                    ),
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        fontSize: 9,
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
+                      Text(
+                        label,
+                        style: const TextStyle(
+                          fontSize: 9,
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );
