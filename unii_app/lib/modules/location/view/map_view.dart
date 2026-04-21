@@ -1,4 +1,5 @@
 import 'dart:ui' as ui;
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
@@ -35,11 +36,13 @@ class MapView extends GetView<app.MapController> {
           children: [
             // OpenStreetMap 地图
             FlutterMap(
+              mapController: controller.fmController,
               options: MapOptions(
                 initialCenter: members.isNotEmpty
                     ? LatLng(members.first.latitude, members.first.longitude)
                     : const LatLng(39.9042, 116.4074), // 默认北京
                 initialZoom: 14,
+                onMapEvent: controller.onMapEvent,
               ),
               children: [
                 Obx(() => TileLayer(
@@ -97,6 +100,13 @@ class MapView extends GetView<app.MapController> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.refresh)),
+              ),
+            ),
+
+            // 屏幕外成员方向箭头
+            Positioned.fill(
+              child: IgnorePointer(
+                child: _buildOffScreenArrows(),
               ),
             ),
           ],
@@ -275,6 +285,101 @@ class MapView extends GetView<app.MapController> {
             }).toList(),
           ),
         ));
+  }
+
+  Widget _buildOffScreenArrows() {
+    return Obx(() {
+      final camera = controller.mapCamera.value;
+      final members = controller.memberLocations;
+      if (camera == null || members.isEmpty) return const SizedBox.shrink();
+
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          const padding = 24.0;
+          final w = constraints.maxWidth;
+          final h = constraints.maxHeight;
+          final center = Offset(w / 2, h / 2);
+
+          final arrows = <Widget>[];
+          for (final member in members) {
+            final screenPt = camera.latLngToScreenPoint(
+              LatLng(member.latitude, member.longitude),
+            );
+            final pt = Offset(screenPt.x.toDouble(), screenPt.y.toDouble());
+
+            // Skip members that are on screen
+            if (pt.dx >= padding &&
+                pt.dx <= w - padding &&
+                pt.dy >= padding &&
+                pt.dy <= h - padding) {
+              continue;
+            }
+
+            final dx = pt.dx - center.dx;
+            final dy = pt.dy - center.dy;
+            final angle = math.atan2(dy, dx) + math.pi / 2;
+
+            final edgePt = _clampToEdge(center, pt, w, h, padding);
+            final label = member.nickname.length > 4
+                ? '${member.nickname.substring(0, 4)}..'
+                : member.nickname;
+
+            arrows.add(
+              Positioned(
+                left: edgePt.dx - 16,
+                top: edgePt.dy - 16,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Transform.rotate(
+                      angle: angle,
+                      child: const Icon(
+                        Icons.navigation,
+                        size: 20,
+                        color: Colors.blue,
+                      ),
+                    ),
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        fontSize: 9,
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          if (arrows.isEmpty) return const SizedBox.shrink();
+          return Stack(children: arrows);
+        },
+      );
+    });
+  }
+
+  static Offset _clampToEdge(
+    Offset center,
+    Offset target,
+    double w,
+    double h,
+    double padding,
+  ) {
+    final dx = target.dx - center.dx;
+    final dy = target.dy - center.dy;
+
+    double scale = double.infinity;
+    if (dx > 0) scale = math.min(scale, (w - padding - center.dx) / dx);
+    if (dx < 0) scale = math.min(scale, (padding - center.dx) / dx);
+    if (dy > 0) scale = math.min(scale, (h - padding - center.dy) / dy);
+    if (dy < 0) scale = math.min(scale, (padding - center.dy) / dy);
+
+    return Offset(
+      (center.dx + dx * scale).clamp(padding, w - padding),
+      (center.dy + dy * scale).clamp(padding, h - padding),
+    );
   }
 }
 
