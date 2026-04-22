@@ -64,7 +64,7 @@ class ChatController extends GetxController {
   Future<void> _loadMembers() async {
     try {
       final detail = await _teamService.getTeamDetail(teamId);
-      if (!isClosed) members.addAll(detail.members);
+      if (!isClosed) members.assignAll(detail.members);
     } catch (_) {}
   }
 
