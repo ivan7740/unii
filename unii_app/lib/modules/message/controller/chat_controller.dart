@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../models/message.dart';
+import '../../../models/team.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/message_cache_service.dart';
 import '../../../services/message_service.dart';
+import '../../../services/team_service.dart';
 import '../../../services/ws_service.dart';
 
 class ChatController extends GetxController {
@@ -11,6 +13,21 @@ class ChatController extends GetxController {
   final WsService _ws = Get.find<WsService>();
   final AuthService _auth = Get.find<AuthService>();
   final MessageCacheService _cache = Get.find<MessageCacheService>();
+  final TeamService _teamService = Get.find<TeamService>();
+
+  final members = <TeamMember>[];
+  final mentionQuery = Rxn<String>();
+
+  List<TeamMember> get filteredMembers {
+    final query = mentionQuery.value;
+    if (query == null) return [];
+    if (query.isEmpty) return members;
+    return members
+        .where((m) => m.nickname.toLowerCase().contains(query.toLowerCase()))
+        .toList();
+  }
+
+  String get currentNickname => _auth.currentUser.value?.nickname ?? '';
 
   final messages = <Message>[].obs;
   final isLoading = false.obs;
@@ -33,6 +50,7 @@ class ChatController extends GetxController {
     teamId = args['team_id'] as String;
     teamName = args['team_name'] as String;
 
+    _loadMembers();
     _setupWsListeners();
 
     // Show cached messages immediately, then refresh from API
@@ -41,6 +59,39 @@ class ChatController extends GetxController {
     loadMessages();
 
     scrollController.addListener(_onScroll);
+  }
+
+  Future<void> _loadMembers() async {
+    try {
+      final detail = await _teamService.getTeamDetail(teamId);
+      members.addAll(detail.members);
+    } catch (_) {}
+  }
+
+  void onTextChanged(String text) {
+    final lastAt = text.lastIndexOf('@');
+    if (lastAt == -1) {
+      mentionQuery.value = null;
+      return;
+    }
+    final afterAt = text.substring(lastAt + 1);
+    if (afterAt.contains(' ')) {
+      mentionQuery.value = null;
+    } else {
+      mentionQuery.value = afterAt;
+    }
+  }
+
+  void selectMention(String nickname) {
+    final text = textController.text;
+    final lastAt = text.lastIndexOf('@');
+    if (lastAt == -1) return;
+    final newText = '${text.substring(0, lastAt)}@$nickname ';
+    textController.text = newText;
+    textController.selection = TextSelection.fromPosition(
+      TextPosition(offset: newText.length),
+    );
+    mentionQuery.value = null;
   }
 
   void _setupWsListeners() {
