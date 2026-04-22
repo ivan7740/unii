@@ -67,6 +67,7 @@ class NotificationService extends GetxService {
     final ws = Get.find<WsService>();
     ws.on('new_message', _onNewMessage);
     ws.on('sos_alert', _onSosAlert);
+    ws.on('mention_notification', _onMentionNotification);
   }
 
   void _onNewMessage(Map<String, dynamic> data) {
@@ -103,6 +104,22 @@ class NotificationService extends GetxService {
       channelName: _sosChannelName,
       importance: Importance.max,
       priority: Priority.high,
+      payload: jsonEncode({'team_id': teamId, 'team_name': teamName}),
+    );
+  }
+
+  void _onMentionNotification(Map<String, dynamic> data) {
+    final teamId = data['team_id'] as String?;
+    final teamName = data['team_name'] as String? ?? '团队消息';
+    final sender = data['sender_nickname'] as String? ?? '';
+    final content = data['content'] as String? ?? '';
+    if (teamId == null) return;
+
+    _showNotification(
+      title: '$sender 在 $teamName 提到了你',
+      body: content,
+      channelId: _messageChannelId,
+      channelName: _messageChannelName,
       payload: jsonEncode({'team_id': teamId, 'team_name': teamName}),
     );
   }
@@ -174,6 +191,7 @@ class NotificationService extends GetxService {
     final ws = Get.find<WsService>();
     ws.off('new_message', _onNewMessage);
     ws.off('sos_alert', _onSosAlert);
+    ws.off('mention_notification', _onMentionNotification);
     super.onClose();
   }
 }
