@@ -110,10 +110,12 @@ class NotificationService extends GetxService {
 
   void _onMentionNotification(Map<String, dynamic> data) {
     final teamId = data['team_id'] as String?;
-    final teamName = data['team_name'] as String? ?? '团队消息';
+    if (teamId == null) return;
+    if (!_shouldNotify(teamId)) return;
+
+    final teamName = _resolveTeamName(teamId);
     final sender = data['sender_nickname'] as String? ?? '';
     final content = data['content'] as String? ?? '';
-    if (teamId == null) return;
 
     _showNotification(
       title: '$sender 在 $teamName 提到了你',
