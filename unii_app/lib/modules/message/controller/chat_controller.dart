@@ -15,7 +15,7 @@ class ChatController extends GetxController {
   final MessageCacheService _cache = Get.find<MessageCacheService>();
   final TeamService _teamService = Get.find<TeamService>();
 
-  final members = <TeamMember>[];
+  final members = <TeamMember>[].obs;
   final mentionQuery = Rxn<String>();
 
   List<TeamMember> get filteredMembers {
@@ -64,7 +64,7 @@ class ChatController extends GetxController {
   Future<void> _loadMembers() async {
     try {
       final detail = await _teamService.getTeamDetail(teamId);
-      members.addAll(detail.members);
+      if (!isClosed) members.addAll(detail.members);
     } catch (_) {}
   }
 
