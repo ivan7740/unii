@@ -73,6 +73,7 @@ class ChatView extends GetView<ChatController> {
                   return MessageBubble(
                     message: message,
                     isMe: isMe,
+                    currentNickname: controller.currentNickname,
                   );
                 },
               );
