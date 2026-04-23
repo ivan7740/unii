@@ -69,6 +69,6 @@ class RegisterController extends GetxController {
       if (status == 400) return '请检查输入信息';
       return ''; // 网络/服务器错误已由 ApiService 统一弹出 Snackbar
     }
-    return '注册失败，请重试';
+    return '注册失败，请重试'; // 非网络异常（罕见），内联提示
   }
 }

@@ -49,9 +49,10 @@ class LoginController extends GetxController {
   }
 
   String _parseError(dynamic e) {
-    if (e is DioException && e.response?.statusCode == 401) {
-      return '手机号或密码错误';
+    if (e is DioException) {
+      if (e.response?.statusCode == 401) return '手机号或密码错误';
+      return ''; // 网络/服务器错误已由 ApiService 统一弹出 Snackbar
     }
-    return ''; // 网络/服务器错误已由 ApiService 统一弹出 Snackbar
+    return '登录失败，请重试'; // 非网络异常（罕见），内联提示
   }
 }
