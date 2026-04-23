@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -17,6 +18,14 @@ import 'services/notification_service.dart';
 import 'utils/constants.dart';
 
 void main() async {
+  FlutterError.onError = (details) {
+    debugPrint('[FlutterError] ${details.exception}\n${details.stack}');
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint('[AsyncError] $error\n$stack');
+    return true;
+  };
+
   WidgetsFlutterBinding.ensureInitialized();
 
   // 初始化全局服务
