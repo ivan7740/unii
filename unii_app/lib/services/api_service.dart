@@ -36,20 +36,27 @@ class ApiService extends GetxService {
   Future<void> _onError(
       DioException err, ErrorInterceptorHandler handler) async {
     if (err.response?.statusCode == 401) {
-      final refreshed = await _tryRefreshToken();
-      if (refreshed) {
-        final opts = err.requestOptions;
-        opts.headers['Authorization'] = 'Bearer ${_storage.accessToken}';
-        try {
-          final response = await dio.fetch(opts);
-          return handler.resolve(response);
-        } on DioException catch (e) {
-          return handler.next(e);
+      final path = err.requestOptions.path;
+      final isAuthEndpoint = path.contains('/auth/login') ||
+          path.contains('/auth/register');
+
+      if (!isAuthEndpoint) {
+        final refreshed = await _tryRefreshToken();
+        if (refreshed) {
+          final opts = err.requestOptions;
+          opts.headers['Authorization'] = 'Bearer ${_storage.accessToken}';
+          try {
+            final response = await dio.fetch(opts);
+            return handler.resolve(response);
+          } on DioException catch (e) {
+            return handler.next(e);
+          }
+        } else {
+          _storage.clearAuth();
+          Get.offAllNamed('/login');
         }
-      } else {
-        _storage.clearAuth();
-        Get.offAllNamed('/login');
       }
+      // Auth endpoints: let controller handle 401 inline (wrong credentials etc.)
     } else {
       final msg = ErrorHelper.message(err);
       if (msg.isNotEmpty) {
