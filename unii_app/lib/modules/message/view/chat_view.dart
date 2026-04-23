@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../widgets/empty_state.dart';
 import '../controller/chat_controller.dart';
 import '../widget/message_bubble.dart';
 import '../widget/quick_message_bar.dart';
@@ -30,20 +31,10 @@ class ChatView extends GetView<ChatController> {
               }
 
               if (controller.messages.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.chat_bubble_outline,
-                          size: 64, color: Colors.grey.shade300),
-                      const SizedBox(height: 12),
-                      Text(
-                        '还没有消息\n发送第一条消息开始聊天',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.grey.shade500),
-                      ),
-                    ],
-                  ),
+                return const EmptyStateWidget(
+                  icon: Icons.forum_outlined,
+                  message: '还没有消息',
+                  hint: '发一条消息打个招呼吧',
                 );
               }
 
