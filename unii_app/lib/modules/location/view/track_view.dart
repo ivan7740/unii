@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../../widgets/empty_state.dart';
 import '../controller/track_controller.dart';
 
 class TrackView extends GetView<TrackController> {
@@ -37,19 +38,10 @@ class TrackView extends GetView<TrackController> {
         }
 
         if (controller.trackPoints.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.route, size: 80, color: Colors.grey.shade300),
-                const SizedBox(height: 16),
-                Text('暂无轨迹数据',
-                    style: TextStyle(fontSize: 16, color: Colors.grey.shade500)),
-                const SizedBox(height: 8),
-                Text('今天还没有位置记录',
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade400)),
-              ],
-            ),
+          return const EmptyStateWidget(
+            icon: Icons.route_outlined,
+            message: '暂无轨迹数据',
+            hint: '开启定位后轨迹将在这里显示',
           );
         }
 
