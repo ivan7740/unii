@@ -48,12 +48,13 @@ void main() {
     expect(result.first.nickname, 'Alice');
   });
 
-  test('sendTextMessage clears textController', () async {
+  test('sendTextMessage clears textController and sends content', () async {
     controller.textController.text = 'Hello team!';
 
     controller.sendTextMessage();
     await Future.delayed(Duration.zero);
 
     expect(controller.textController.text, '');
+    expect(fakeMessage.lastSentContent, 'Hello team!');
   });
 }

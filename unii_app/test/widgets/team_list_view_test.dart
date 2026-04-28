@@ -13,13 +13,15 @@ void main() {
     fakeTeam = FakeTeamService();
     Get.put<TeamService>(fakeTeam);
     Get.put<StorageService>(FakeStorageService());
-    Get.put(TeamListController());
+    // Controller is NOT registered in setUp so each test can configure
+    // fakeTeam.teamsToReturn before onInit fires and calls loadTeams().
   });
 
   tearDown(() => Get.reset());
 
   testWidgets('empty team list shows no-team hint text', (tester) async {
     fakeTeam.teamsToReturn = [];
+    Get.put(TeamListController());
 
     await tester.pumpWidget(const GetMaterialApp(home: TeamListView()));
     await tester.pumpAndSettle();
@@ -29,10 +31,9 @@ void main() {
 
   testWidgets('non-empty team list shows team name in card', (tester) async {
     fakeTeam.teamsToReturn = [makeTeam(name: '徒步队')];
+    Get.put(TeamListController());
 
     await tester.pumpWidget(const GetMaterialApp(home: TeamListView()));
-    // Manually trigger a reload so the controller picks up the updated teamsToReturn
-    Get.find<TeamListController>().loadTeams();
     await tester.pumpAndSettle();
 
     expect(find.text('徒步队'), findsOneWidget);
