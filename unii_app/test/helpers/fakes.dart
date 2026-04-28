@@ -204,6 +204,9 @@ class FakeWsService extends Fake implements WsService {
 
 class FakeMessageCacheService extends Fake implements MessageCacheService {
   @override
+  Future<MessageCacheService> init() async => this;
+
+  @override
   List<Message> loadMessages(String teamId) => [];
 
   @override
@@ -249,5 +252,5 @@ class FakeStorageService extends Fake implements StorageService {
   }
 
   @override
-  Future<FakeStorageService> init() async => this;
+  Future<StorageService> init() async => this;
 }
