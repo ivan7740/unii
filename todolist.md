@@ -212,9 +212,9 @@
 - [x] **[B]** 敏感数据：密码 argon2 hash，日志脱敏
 
 ### 测试
-- [ ] **[B]** 后端集成测试：test database，覆盖完整 API 流程
-- [ ] **[F]** 前端 Controller 单元测试（mockito mock ApiService）
-- [ ] **[F]** 前端 Widget 测试：关键页面渲染测试
+- [x] **[B]** 后端集成测试：test database，覆盖完整 API 流程
+- [x] **[F]** 前端 Controller 单元测试（Fake 服务注入，覆盖 Login/Team/Chat Controller）
+- [x] **[F]** 前端 Widget 测试：LoginView / TeamListView / ChatView 渲染与交互测试
 
 ### 错误处理
 - [x] **[F]** 全局异常捕获 + Flutter 异常上报
