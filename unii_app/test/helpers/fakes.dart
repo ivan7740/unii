@@ -55,7 +55,7 @@ TeamMember makeTeamMember({String nickname = 'Alice'}) => TeamMember(
 
 // ── FakeAuthService ────────────────────────────────────────────────────────
 
-class FakeAuthService extends Fake implements AuthService {
+class FakeAuthService extends GetxService implements AuthService {
   @override
   final Rx<User?> currentUser = Rx<User?>(null);
 
