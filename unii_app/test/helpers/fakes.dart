@@ -1,4 +1,3 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:unii_app/models/message.dart';
 import 'package:unii_app/models/team.dart';
@@ -99,7 +98,7 @@ class FakeAuthService extends GetxService implements AuthService {
 
 // ── FakeTeamService ────────────────────────────────────────────────────────
 
-class FakeTeamService extends Fake implements TeamService {
+class FakeTeamService extends GetxService implements TeamService {
   List<Team> teamsToReturn = [];
   bool shouldGetTeamsFail = false;
   int getMyTeamsCallCount = 0;
@@ -136,7 +135,7 @@ class FakeTeamService extends Fake implements TeamService {
 
 // ── FakeMessageService ─────────────────────────────────────────────────────
 
-class FakeMessageService extends Fake implements MessageService {
+class FakeMessageService extends GetxService implements MessageService {
   List<Message> messagesToReturn = [];
   String? lastSentContent;
 
@@ -164,7 +163,7 @@ class FakeMessageService extends Fake implements MessageService {
 
 // ── FakeWsService ──────────────────────────────────────────────────────────
 
-class FakeWsService extends Fake implements WsService {
+class FakeWsService extends GetxService implements WsService {
   @override
   final status = ConnectionStatus.disconnected.obs;
 
@@ -202,7 +201,7 @@ class FakeWsService extends Fake implements WsService {
 
 // ── FakeMessageCacheService ────────────────────────────────────────────────
 
-class FakeMessageCacheService extends Fake implements MessageCacheService {
+class FakeMessageCacheService extends GetxService implements MessageCacheService {
   @override
   Future<MessageCacheService> init() async => this;
 
@@ -218,7 +217,7 @@ class FakeMessageCacheService extends Fake implements MessageCacheService {
 
 // ── FakeStorageService ─────────────────────────────────────────────────────
 
-class FakeStorageService extends Fake implements StorageService {
+class FakeStorageService extends GetxService implements StorageService {
   final _data = <String, dynamic>{};
 
   @override
