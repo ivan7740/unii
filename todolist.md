@@ -179,7 +179,7 @@
 - [x] **[F]** 团队成员列表和地图 marker 显示在线/离线状态（绿色/灰色圆点）
 
 ### 轨迹功能
-- [ ] **[B]** 优化轨迹查询：时间范围筛选、Douglas-Peucker 轨迹简化
+- [x] **[B]** 优化轨迹查询：时间范围筛选（start/end 已有）、服务端 Douglas-Peucker 简化（epsilon_meters 可选参数）
 - [x] **[F]** 实现 track_view：Polyline 轨迹绘制、时间轴回放、播放/暂停
 - [x] **[F]** 实现 track_controller：轨迹数据加载、回放动画
 
